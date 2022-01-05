@@ -7,7 +7,7 @@ MAMnet is able to detect and genotype deletions and insertions with fast running
 Installation
 ------------
 
-    #Install from github (requires Python 3.6): installs all dependencies except those necessary for read alignment (ngmlr, minimap2, samtools)
+    #Install from github (requires Python 3.8): installs all dependencies except those necessary for read alignment (ngmlr, minimap2, samtools)
     git clone https://github.com/micahvista/MAMnet.git
     cd MAMnet
     pip install .
