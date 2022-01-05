@@ -14,7 +14,7 @@ Installation
 
 Dependencies
 ------------
-- *tensorflow>=2.3.0* for plotting
+- *tensorflow>=2.3.0* 
 - *numpy* 
 - *pysam* 
 - *numba*
