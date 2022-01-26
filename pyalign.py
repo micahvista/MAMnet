@@ -1386,8 +1386,8 @@ def c_c_nosa(mdtaglist, cigarlist, corposlist, tstart, end, svtype, qualityarray
 
     return info, cluster_result, cluster_readcount
 
-if __name__ == "__main__":
-    cc.compile()
+
+cc.compile()
 def labeldata(vcfpath, contig, start, end):
   goldl = []
   window_size = 200
