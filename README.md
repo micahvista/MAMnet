@@ -7,17 +7,18 @@ MAMnet is able to detect and genotype deletions and insertions with fast running
 Installation
 ------------
 
-    #Install from github (requires Python 3.8): installs all dependencies except those necessary for read alignment (ngmlr, minimap2, samtools)
+    #Install from github (requires Python 3.6.* or newer): installs all dependencies except those necessary for read alignment (ngmlr, minimap2, samtools)
     git clone https://github.com/micahvista/MAMnet.git
     cd MAMnet
-    pip install .
 
 Dependencies
 ------------
 - *tensorflow>=2.3.0* 
+- *pandas*
 - *numpy* 
 - *pysam* 
 - *numba*
+- *scipy*
 
 
 
@@ -40,7 +41,7 @@ Usage
     #-outputpath the output path of called vcf file
     #-threads the number of threads to use. (default: all available thread)
     #-step data shift size [1-200]. (default: 50)
-    #-includecontig the list of contig to preform detection. (default: [], all contig are included)
+    #-includecontig the list of contig to preform detection. (default: [], all contig are used)
 
 
 Changelog
