@@ -33,7 +33,7 @@ class se(tf.keras.layers.Layer):
         'class_name': 'VarianceScaling',
         'config': {
             'scale': 2.0,
-            'mode': 'fan_out',.
+            'mode': 'fan_out',
             'distribution': 'normal'
             }
         }
