@@ -20,7 +20,7 @@ from tensorflow.keras.layers import LSTM, Dense, RepeatVector, TimeDistributed, 
 from collections import Counter
 
 import sys
-import sys
+
 
 
 
@@ -226,6 +226,7 @@ def geno_model(mc = False):
 
 import multiprocessing
 import os
+import pyalign
 from multiprocessing import Process, Queue
 from multiprocessing.sharedctypes import Value, Array
 import time
