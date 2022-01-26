@@ -1055,7 +1055,7 @@ pdict = {}
 for item in pstring[1:]:
     if(forvaule == True):
         forvaule = False
-        if(op == 'bamfilepath' or op == 'workdir'):
+        if('path' in op or op == 'workdir'):
             pdict[op] = (item)
             continue
         pdict[op] = eval(item)
