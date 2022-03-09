@@ -601,6 +601,8 @@ def baseinfo_main(bamfilepath='', pdict = {}, workdir='./', max_worker = 1e20, s
     orderarray = np.argsort([contig2length[contig] for contig in includecontig])[::-1]
     for contigiloc in orderarray:
         contig = includecontig[contigiloc]
+        if(contig2length[contig]<100000):
+            continue
         if(contig2length[contig]<200000 or (max_worker == 1)):
             baseinfo_AlignedSegment(genotype, bamfilepath, contig, 0, contig2length[contig], meanvalue, window_size, maxcountread, workdir, INTERVAL)
             continue
