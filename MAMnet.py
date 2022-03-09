@@ -296,7 +296,10 @@ def baseinfo_AlignedSegment(genotype, bamfilepath, contig, r_start, r_end, meanv
                 
             meanvalue = np.load(workdir+'meanarray.npy').astype('float32')
             maxcountread = closerone(meanvalue[0][-1])
-            baseinfo_AlignedSegment_child(sapresent, qualityarray, mdtaglist, cigarlist, corposlist, contig, start, start+(((preend-start)//window_size) + 1)*window_size, primaryreadidcontigandsa, primaryssee, maxcountread, window_size, meanvalue, workdir)
+            try:
+                baseinfo_AlignedSegment_child(sapresent, qualityarray, mdtaglist, cigarlist, corposlist, contig, start, start+(((preend-start)//window_size) + 1)*window_size, primaryreadidcontigandsa, primaryssee, maxcountread, window_size, meanvalue, workdir)
+            except:
+                print('error on ', contig, r_start, r_end)
             break
         else:
             time.sleep(2)
