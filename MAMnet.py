@@ -526,7 +526,7 @@ def call_sv(feedgpuqueue, calledqueue, step, window_size, weightpathdict, meanva
         
 def baseinfo_main(bamfilepath='', pdict = {}, workdir='./', max_worker = 1e20, step = 200, window_size = 200,  INTERVAL = 1e7, includecontig = [], guesstime = 400, genotype = False, mc = False, Hi = 200, MINSIZE = 0):
     
-    outputpath = 'variants.vcf'
+    outputpath = bamfilepath.split('/)[-1][:-4] + '.vcf'
     if(len(pdict) != 0):
         if('bamfilepath' in pdict):
             bamfilepath = pdict['bamfilepath']
