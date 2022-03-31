@@ -603,19 +603,26 @@ def baseinfo_main(bamfilepath='', pdict = {}, workdir='./', max_worker = 1e20, s
         contig = includecontig[contigiloc]
         if(contig2length[contig]<100000):
             continue
-        if(contig2length[contig]<200000 or (max_worker == 1)):
-            baseinfo_AlignedSegment(genotype, bamfilepath, contig, 0, contig2length[contig], meanvalue, window_size, maxcountread, workdir, INTERVAL)
-            continue
         r_start = 0
+        if(contig2length[contig]<200000 or (max_worker == 1)):
+            while(r_start<contig2length[contig]):
+                print('working on contig = ', contig, r_start, r_start+MINSIZE )
+                if((r_start + int(INTERVAL)) > contig2length[contig]):
+                    baseinfo_AlignedSegment(genotype, bamfilepath, contig, r_start, contig2length[contig]+10000, meanvalue, window_size, maxcountread, workdir, INTERVAL)
+                    r_start = contig2length[contig]+10000
+                else:
+                    baseinfo_AlignedSegment(genotype, bamfilepath, contig, r_start, r_start+MINSIZE, meanvalue, window_size, maxcountread, workdir, INTERVAL)
+                    r_start += MINSIZE
+            continue
+
         while(r_start<contig2length[contig]):
 
             while(True):
                 if(len(multiprocessing.active_children()) < (max_worker+1)):
                     print('working on contig = ', contig, r_start, r_start+MINSIZE )
-                    contig = str(contig)
                     if((r_start + int(INTERVAL)) > contig2length[contig]):
-                        multiprocessing.Process(target=baseinfo_AlignedSegment, args=(genotype, bamfilepath, contig, r_start, r_start+int(1.5 * MINSIZE), meanvalue, window_size, maxcountread, workdir, INTERVAL)).start()
-                        r_start += int(INTERVAL)
+                        multiprocessing.Process(target=baseinfo_AlignedSegment, args=(genotype, bamfilepath, contig, r_start, contig2length[contig]+10000, meanvalue, window_size, maxcountread, workdir, INTERVAL)).start()
+                        r_start = contig2length[contig]+10000
                     else:
                         multiprocessing.Process(target=baseinfo_AlignedSegment, args=(genotype, bamfilepath, contig, r_start, r_start+MINSIZE, meanvalue, window_size, maxcountread, workdir, INTERVAL)).start()
                         r_start += MINSIZE
