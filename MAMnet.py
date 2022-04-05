@@ -825,10 +825,10 @@ def tovcf(rawsvlist, contig2length, outputpath):
         geno = rec[4]
         if(rec[2]<0):
             recinfo = 'SVLEN=' + str(int(rec[2]))+';SVTYPE=' + 'DEL'+';END='+str(int(rec[1])+abs(int(rec[2])))+';RE='+str(int(rec[3])+1)+'\tGT\t'+geno+'\n'
-            myvcf += (contig +'\t'+ str(int(rec[1]))+'\t'+ '.'+'\t'+ '.'+'\t'+ 'A'+'\t'+ '.'+'\t'+ 'PASS'+'\t'+recinfo)
+            myvcf += (contig +'\t'+ str(int(rec[1]))+'\t'+ '.'+'\t'+ '.'+'\t'+ 'A'+'\t'+ str(int(rec[3])+1)+'\t'+ 'PASS'+'\t'+recinfo)
         elif(rec[2]>0):
             recinfo = 'SVLEN=' + str(int(rec[2]))+';SVTYPE=' + 'INS'+';END='+str(int(rec[1])+1)+';RE='+str(int(rec[3])+1)+'\tGT\t'+geno+'\n'
-            myvcf += (contig +'\t'+ str(int(rec[1]))+'\t'+ '.'+'\t'+ '.'+'\t'+ 'A'+'\t'+ '.'+'\t'+ 'PASS'+'\t'+recinfo)
+            myvcf += (contig +'\t'+ str(int(rec[1]))+'\t'+ '.'+'\t'+ '.'+'\t'+ 'A'+'\t'+ str(int(rec[3])+1)+'\t'+ 'PASS'+'\t'+recinfo)
 
 
     with open(outputpath, "w") as f:
