@@ -810,7 +810,7 @@ def tovcf(rawsvlist, contig2length, outputpath):
 ##INFO=<ID=SVLEN,Number=.,Type=Integer,Description="Difference in length between REF and ALT alleles">
 ##INFO=<ID=RE,Number=1,Type=Integer,Description="Number of read support this record">
 ##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
-#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\n"""
+#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t.\n"""
 
     myvcf = top+body+tail
     genomapper = {0:'0/0', 1:'0/1', 2:'1/1'}
