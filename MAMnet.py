@@ -19,6 +19,7 @@ from tensorflow.keras.layers import LSTM, Dense, RepeatVector, TimeDistributed, 
     multiply, concatenate, Flatten, Activation, dot
 from collections import Counter
 
+
 import sys
 
 
@@ -310,7 +311,7 @@ def baseinfo_AlignedSegment_child(sapresent, qualityarray, mdtaglist, cigarlist,
 
     qualityarray = np.array(qualityarray, dtype = 'float32')
     qualityarray = qualityarray - qualityarray.min(axis = 0)
-    qualityarray = qualityarray / qualityarray.max(axis = 0)
+    qualityarray = qualityarray / (qualityarray.max(axis = 0) + 1e-7)
     
     if(sapresent == True):
 
@@ -477,7 +478,7 @@ def call_sv(feedgpuqueue, calledqueue, step, window_size, weightpathdict, meanva
                     end = int(datainfo[2])
                     alldata = np.load(workdir+filelist[fileiloc])
                     data, index, bp = alldata['data'].astype(np.float32), alldata['index'], alldata['bp']
-                    print('loaded ', workdir+filelist[fileiloc], os.path.isfile(workdir+filelist[fileiloc]))
+                    #print('loaded ', workdir+filelist[fileiloc], os.path.isfile(workdir+filelist[fileiloc]))
                     usedlist.append(filelist[fileiloc])
                     timedict['loadtime'] = time.time() - st
                     break
@@ -504,7 +505,7 @@ def call_sv(feedgpuqueue, calledqueue, step, window_size, weightpathdict, meanva
 
                 result += tmp_result
                 timedict['bptime'] = time.time() - st
-                print(timedict)
+                #print(timedict)
 
                 print(contig, str(start), str(end), 'completed', os.path.isfile(workdir+filelist[fileiloc]), str(len(usedlist))+'/'+str(len([path for path in os.listdir(workdir) if(('npz' in path))])))
                 firstrun = False
@@ -525,6 +526,14 @@ def call_sv(feedgpuqueue, calledqueue, step, window_size, weightpathdict, meanva
             
         
 def baseinfo_main(bamfilepath='', pdict = {}, workdir='./', max_worker = 1e20, step = 200, window_size = 200,  INTERVAL = 1e7, includecontig = [], guesstime = 400, genotype = False, mc = False, Hi = 200, MINSIZE = 0):
+    weightpathdict = {
+                      'DELINS':'./type',
+                      'GENOTYPE':"./geno",
+                      'bacth_inner':100,
+                      'bacth_outer':50
+
+
+    }
     if(len(pdict) != 0):
         if('bamfilepath' in pdict):
             bamfilepath = pdict['bamfilepath']
@@ -541,8 +550,10 @@ def baseinfo_main(bamfilepath='', pdict = {}, workdir='./', max_worker = 1e20, s
             genotype = pdict['genotype']
         if('workdir' in pdict):
             workdir = pdict['workdir']
-        if('outputpath' in pdict):
-            outputpath = pdict['outputpath']
+        if('SV_weightspath' in pdict):
+            weightpathdict['DELINS'] = pdict['SV_weightspath']
+        if('genotype_weightspath' in pdict):
+            weightpathdict['GENOTYPE'] = pdict['genotype_weightspath']
     outputpath = bamfilepath.split('/')[-1][:-4] + '.vcf'
     bamfile = pysam.AlignmentFile(bamfilepath, 'rb')
     contig2length = {}
@@ -575,14 +586,7 @@ def baseinfo_main(bamfilepath='', pdict = {}, workdir='./', max_worker = 1e20, s
 
     multiprocessing.Process(target=guess_summary, args=(bamfilepath, guesstime, workdir)).start()
     bamfile = pysam.AlignmentFile(bamfilepath, 'rb', threads = 20)
-    weightpathdict = {
-                      'DELINS':'./type',
-                      'GENOTYPE':"./geno",
-                      'bacth_inner':100,
-                      'bacth_outer':50
 
-
-    }
 
     p = multiprocessing.Process(target=call_sv, args=(feedgpuqueue, calledqueue, step, window_size, weightpathdict, meanvalue, workdir, genotype, mc, Hi, ))
     p.start()
@@ -632,6 +636,7 @@ def baseinfo_main(bamfilepath='', pdict = {}, workdir='./', max_worker = 1e20, s
 
 
     stopsignal = False
+    print('waiting')
     while(True):
         if((stopsignal == False) and (len(multiprocessing.active_children())) == 1):
             feedgpuqueue.put(1) 
@@ -674,62 +679,7 @@ def baseinfo_guess(bamfile, contig, start, end, feature_count, maxcountread):
     qualityarray = qualityarray / (qualityarray.max(axis = 0) + 0.000001)
     return mamnet.g_d(mdtaglist, cigarlist, corposlist, end - start, np.argsort(qualityarray.sum(axis = 1))[::-1], maxcountread).astype('float32'), np.array(readtrustedarray)
                             
-def guess_summary_depth(bamfilepath, times, window_size = 200, feature_count = 9):
-    meanlist = []
-    trustsummary = []
-    bamfile = pysam.AlignmentFile(bamfilepath, 'rb', threads = 20)
-    topcontig = ''
-    for AlignedSegment in bamfile.fetch():
-        if('chr' in AlignedSegment.reference_name):
-            topcontig = 'chr'
-        break
-            
-    for i in range(times):
-        while(True):
-            contig = str(np.random.randint(1, 23))
-            start = np.random.randint(150000000)
-            
-            try:
-                data, tmptrustsumary = baseinfo_guess(bamfile, topcontig+contig, start, start + window_size, feature_count, 2)
-                meanlist.append(data.flatten())
-            except:
-                #print('Bad luck')
 
-                continue
-            break
-       
-    meanlist = np.stack(meanlist)
-    return meanlist.reshape(meanlist.size//feature_count, feature_count).astype('float64').mean(axis = 0).astype('int32')[-1]
-def guess_summary(bamfilepath, times, window_size = 200, feature_count = 9):
-    meanlist = []
-    trustsummary = []
-    maxcountread = int(guess_summary_depth(bamfilepath, times, window_size = 200, feature_count = 9))+1
-    print('depth = ',  maxcountread)
-    bamfile = pysam.AlignmentFile(bamfilepath, 'rb', threads = 20)
-    topcontig = ''
-    for AlignedSegment in bamfile.fetch():
-        if('chr' in AlignedSegment.reference_name):
-            topcontig = 'chr'
-        break
-            
-    for i in range(times):
-        while(True):
-            contig = str(np.random.randint(1, 23))
-            start = np.random.randint(150000000)
-            
-            try:
-                data, tmptrustsumary = baseinfo_guess(bamfile, topcontig+contig, start, start + window_size, feature_count, maxcountread)
-                meanlist.append(data.flatten())
-
-            except:
-                #print('Bad luck')
-
-                continue
-            break
-       
-
-    meanlist = np.stack(meanlist)
-    return meanlist.reshape(meanlist.size//feature_count, feature_count).astype('float64').mean(axis = 0, keepdims = True).astype('float32'), 1, 2
 def closerone(floatnumber):
     floor = int(floatnumber)
     top = floor + 1
@@ -742,19 +692,21 @@ def guess_summary_depth(bamfilepath, times, window_size = 200, feature_count = 9
     contig2length = {}
     for count in range(len(bamfile.get_index_statistics())):
         contig2length[bamfile.get_index_statistics()[count].contig] = bamfile.lengths[count]
-    topcontig = ''
-    for AlignedSegment in bamfile.fetch():
-        if('chr' in AlignedSegment.reference_name):
-            topcontig = 'chr'
-        break
+    orderarray = np.argsort([contig2length[contig] for contig in contig2length])[::-1]
+    contigLIST = []
+    
+    for contig in contig2length:
+        contigLIST.append(contig)
+    contigLIST = np.array(contigLIST)[orderarray][:20]
+
             
     for i in range(times):
         while(True):
-            contig = str(np.random.randint(1, 23))
-            start = np.random.randint(contig2length[topcontig+contig])
+            contig = contigLIST[np.random.randint(0, len(contigLIST))]
+            start = np.random.randint(contig2length[contig])
             
             try:
-                data, tmptrustsumary = baseinfo_guess(bamfile, topcontig+contig, start, start + window_size, feature_count, 2)
+                data, tmptrustsumary = baseinfo_guess(bamfile, contig, start, start + window_size, feature_count, 2)
                 meanlist.append(data.flatten())
             except:
                 #print('Bad luck')
@@ -773,18 +725,20 @@ def guess_summary(bamfilepath, times, workdir, window_size = 200, feature_count 
     contig2length = {}
     for count in range(len(bamfile.get_index_statistics())):
         contig2length[bamfile.get_index_statistics()[count].contig] = bamfile.lengths[count]
-    topcontig = ''
-    for AlignedSegment in bamfile.fetch():
-        if('chr' in AlignedSegment.reference_name):
-            topcontig = 'chr'
-        break       
+    orderarray = np.argsort([contig2length[contig] for contig in contig2length])[::-1]
+    contigLIST = []
+    
+    for contig in contig2length:
+        contigLIST.append(contig)
+    contigLIST = np.array(contigLIST)[orderarray][:20]
+
     for i in range(times):
         while(True):
-            contig = str(np.random.randint(1, 23))
-            start = np.random.randint(contig2length[topcontig+contig])
+            contig = contigLIST[np.random.randint(0, len(contigLIST))]
+            start = np.random.randint(contig2length[contig])
             
             try:
-                data, tmptrustsumary = baseinfo_guess(bamfile, topcontig+contig, start, start + window_size, feature_count, maxcountread)
+                data, tmptrustsumary = baseinfo_guess(bamfile, contig, start, start + window_size, feature_count, maxcountread)
                 meanlist.append(data.flatten())
 
             except:
