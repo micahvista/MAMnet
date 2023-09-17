@@ -554,7 +554,10 @@ def baseinfo_main(bamfilepath='', pdict = {}, workdir='./', max_worker = 1e20, s
             weightpathdict['DELINS'] = pdict['SV_weightspath']
         if('genotype_weightspath' in pdict):
             weightpathdict['GENOTYPE'] = pdict['genotype_weightspath']
-    outputpath = bamfilepath.split('/')[-1][:-4] + '.vcf'
+        if('outputpath' in pdict):
+            outputpath = pdict['outputpath']
+        else:
+            outputpath = bamfilepath.split('/')[-1][:-4] + '.vcf'
     bamfile = pysam.AlignmentFile(bamfilepath, 'rb')
     contig2length = {}
     for count in range(len(bamfile.get_index_statistics())):
