@@ -565,6 +565,8 @@ def baseinfo_main(bamfilepath='', pdict = {}, workdir='./', max_worker = 1e20, s
     meanvalue, maxcountread = 0, 0
     max_worker = max(min(max_worker, (len(os.sched_getaffinity(0)))), 1)
     print('Process number limit to ', max_worker)
+    if(workdir == './'):
+        workdir += 'mammapdhjs/'
     if(workdir != './'):
         if(workdir[-1] != '/'):
             workdir += '/'
