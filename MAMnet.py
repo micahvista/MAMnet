@@ -274,7 +274,10 @@ def baseinfo_AlignedSegment(genotype, bamfilepath, contig, r_start, r_end, meanv
             
         preend = reference_end    
         qualityarray.append([AlignedSegment.query_alignment_length/ AlignedSegment.infer_read_length(), AlignedSegment.query_alignment_length, AlignedSegment.mapping_quality])
-        mdtaglist.append(AlignedSegment.get_tag('MD'))
+        if(AlignedSegment.has_tag('MD') == True):
+            mdtaglist.append(AlignedSegment.get_tag('MD'))
+        else:
+            mdtaglist.append(str(reference_end - reference_start))
         cigarlist.append(AlignedSegment.cigarstring)
         corposlist.append(List([reference_start - start, reference_end - start]))
         strandcode = decode_flag(AlignedSegment.flag)
