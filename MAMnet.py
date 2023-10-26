@@ -269,6 +269,8 @@ def baseinfo_AlignedSegment(genotype, bamfilepath, contig, r_start, r_end, meanv
     
     
     for AlignedSegment in pysam.AlignmentFile(bamfilepath, 'rb').fetch(contig, r_start, r_end):
+        if(AlignedSegment.is_secondary == True):
+            continue
         reference_start, reference_end = AlignedSegment.reference_start, AlignedSegment.reference_end
 
             
